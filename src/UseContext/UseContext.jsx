@@ -13,39 +13,40 @@ export const ContextProvider = ({ children }) => {
   const [searchValue, setSearchValue] = useState('');
   const [collections, setCollections] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [page, setPage] = useState(1);
+
+  const getDataCollections = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get(
+        `http://localhost:3000/collections?_page=${page}&_limit=3&${
+          categoryId ? `category=${categoryId}` : ''
+        }`
+      );
+
+      setCollections(response.data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getDataCategories = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/categories');
+
+      setCategories(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
-    const getDataCollections = async () => {
-      try {
-        setIsLoading(true);
-        const response = await axios.get(
-          `http://localhost:3000/collections?${
-            categoryId ? `category=${categoryId}` : ''
-          }`
-        );
-
-        setCollections(response.data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     getDataCollections();
-  }, [categoryId]);
+  }, [categoryId, page]);
 
   useEffect(() => {
-    const getDataCategories = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/categories');
-
-        setCategories(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
     getDataCategories();
   }, []);
 
@@ -59,6 +60,8 @@ export const ContextProvider = ({ children }) => {
         categoryId,
         setCategoryId,
         isLoading,
+        page,
+        setPage,
       }}
     >
       {children}
